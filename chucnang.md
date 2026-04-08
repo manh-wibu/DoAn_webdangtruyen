@@ -1,6 +1,6 @@
 4.1. Các chức năng cơ bản
 Module	Số chức năng	Mô tả chức năng
-Auth	4	register, login, submitAccountAppeal, logout
+Auth	8	register, resendVerificationOtp, verifyEmailOtp, requestPasswordReset, resetPasswordWithOtp, login, submitAccountAppeal, logout
 Content	14	createStory, createArtwork, get, getHomeFeed, search, update, delete, getTrending, getPopularCreators, getRecommendedTags, getTrendingTags, getTagDirectory, toggleLike, toggleBookmark
 Comment	3	createComment, deleteComment, getComments
 Moderation	13	dismissReports, banContent, getUsersForModeration, banUser, permanentlyBanUser, unbanUser, getAccountAppeals, approveAccountAppeal, rejectAccountAppeal, getReports, openReportIncident, releaseReportIncident, getReportDetails
@@ -9,9 +9,13 @@ Report	1	createReport
 User	14	getProfile, updateProfile, updateAvatar, getFavoriteTags, addFavoriteTag, removeFavoriteTag, followUser, unfollowUser, getFollowers, getFollowing, getReadingHistory, searchCreators, getBookmarkedContent, getLikedContent
 4.2. Mô tả các chức năng
 -	Auth:
-o	register: Đăng ký tài khoản mới với username, email, mật khẩu; kiểm tra trùng lặp; mã hóa mật khẩu; lưu vào database với role 'user'
-o	login: Đăng nhập với email, mật khẩu; kiểm tra tài khoản; tạo JWT token 7 ngày nếu hợp lệ; xử lý tài khoản bị cấm; kiểm tra login notice
-o	submitAccountAppeal: Gửi yêu cầu appeal cho tài khoản bị cấm vĩnh viễn; cần appeal token, lý do, bằng chứng; kiểm tra token và trạng thái; lưu appeal và thông báo admin
+o	register: Đăng ký tài khoản mới với username, email, mật khẩu; kiểm tra trùng lặp; mã hóa mật khẩu; lưu vào database với role 'user'; tự động tạo OTP verification và gửi email
+o	resendVerificationOtp: Gửi lại mã OTP xác thực email; kiểm tra email tồn tại; kiểm tra email chưa verify; tạo OTP mới; gửi email kèm mã (privacy: không tiết lộ email không tồn tại)
+o	verifyEmailOtp: Xác thực email bằng mã OTP; kiểm tra email và code; xác thực mã OTP; set status isVerified = true
+o	requestPasswordReset: Yêu cầu đặt lại mật khẩu; kiểm tra email; tạo OTP reset; gửi email kèm mã (privacy: không tiết lộ email không tồn tại)
+o	resetPasswordWithOtp: Đặt lại mật khẩu; kiểm tra email, code, mật khẩu; validate độ dài mật khẩu ≥ 8; xác thực OTP reset; hash password mới; lưu database
+o	login: Đăng nhập với email, mật khẩu; kiểm tra tài khoản; so sánh password; xử lý tài khoản bị cấm vĩnh viễn (trả appeal token 30 phút); tạo JWT token 7 ngày; kiểm tra login notice; dọn dẹp likes/bookmarks
+o	submitAccountAppeal: Gửi yêu cầu appeal cho tài khoản bị cấm vĩnh viễn; xác thực appeal token; kiểm tra trạng thái account; kiểm tra chưa có appeal pending; lưu appeal với lý do/bằng chứng; thông báo admin qua WebSocket
 o	logout: Đăng xuất; client xóa token; trả về thông báo thành công
 -	Content:
 o	createStory: Tạo bài viết (story) với tiêu đề, mô tả, nội dung, hashtag, trạng thái, ảnh tùy chọn; parse hashtag; upload ảnh; lưu với tác giả
